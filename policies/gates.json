@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "high_risks": ["money", "authorization", "security", "compliance"],
+  "allowed_oracle_sources": ["approved_spec"],
+  "require_human_review_for": ["money", "authorization", "security", "compliance"],
+  "release": {
+    "forbid_new_skips": true,
+    "forbid_assertion_drift": true,
+    "require_fault_proof": true,
+    "require_human_approval": true
+  }
+}

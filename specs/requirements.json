@@ -1,0 +1,54 @@
+{
+  "spec_version": "refund-1.0.0",
+  "approved_by": "demo-product-owner",
+  "requirements": [
+    {
+      "id": "REQ-REFUND-001",
+      "source": "specs/refund-prd.md# refundable-amount",
+      "risk": "money",
+      "rule": "The cumulative refund amount must not exceed the paid amount.",
+      "oracle_source": "approved_spec",
+      "unresolved": [],
+      "acceptance": [
+        "A refund equal to the remaining amount is accepted.",
+        "A refund above the remaining amount returns HTTP 400 and does not change state."
+      ]
+    },
+    {
+      "id": "REQ-REFUND-002",
+      "source": "specs/refund-prd.md# idempotency",
+      "risk": "money",
+      "rule": "Retrying the same idempotency key must not create a second refund.",
+      "oracle_source": "approved_spec",
+      "unresolved": [],
+      "acceptance": [
+        "A retry returns the original refund result.",
+        "The order refunded amount increases only once."
+      ]
+    },
+    {
+      "id": "REQ-REFUND-003",
+      "source": "specs/refund-prd.md# authorization",
+      "risk": "authorization",
+      "rule": "Users can read and refund only their own orders.",
+      "oracle_source": "approved_spec",
+      "unresolved": [],
+      "acceptance": [
+        "Another user's order read returns HTTP 403.",
+        "Another user's refund attempt returns HTTP 403 and does not change state."
+      ]
+    },
+    {
+      "id": "REQ-REFUND-004",
+      "source": "specs/refund-prd.md# order-state",
+      "risk": "business",
+      "rule": "Only paid or partially refunded orders can be refunded.",
+      "oracle_source": "approved_spec",
+      "unresolved": [],
+      "acceptance": [
+        "Cancelled orders return HTTP 409 on refund.",
+        "Fully refunded orders return HTTP 409 on refund."
+      ]
+    }
+  ]
+}

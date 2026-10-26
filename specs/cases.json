@@ -1,0 +1,9 @@
+{
+  "cases": [
+    {"id": "CASE-REFUND-BOUNDARY", "requirement_ids": ["REQ-REFUND-001"], "risk": "money", "test_nodeid": "test_refund_api.py::test_refund_equal_to_remaining_is_accepted", "oracle": "HTTP 200 and exact refunded amount"},
+    {"id": "CASE-REFUND-EXCESS", "requirement_ids": ["REQ-REFUND-001"], "risk": "money", "test_nodeid": "test_refund_api.py::test_over_refund_is_rejected_without_state_change", "oracle": "HTTP 400 and unchanged refunded amount"},
+    {"id": "CASE-REFUND-IDEMPOTENT", "requirement_ids": ["REQ-REFUND-002"], "risk": "money", "test_nodeid": "test_refund_api.py::test_idempotent_retry_creates_one_refund", "oracle": "Same refund id and amount increases once"},
+    {"id": "CASE-ORDER-IDOR", "requirement_ids": ["REQ-REFUND-003"], "risk": "authorization", "test_nodeid": "test_refund_api.py::test_other_user_cannot_read_or_refund_order", "oracle": "HTTP 403 and unchanged refunded amount"},
+    {"id": "CASE-ORDER-STATE", "requirement_ids": ["REQ-REFUND-004"], "risk": "business", "test_nodeid": "test_refund_api.py::test_cancelled_order_cannot_be_refunded", "oracle": "HTTP 409 and unchanged refunded amount"}
+  ]
+}

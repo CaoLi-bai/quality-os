@@ -1,0 +1,15 @@
+{
+  "spec_version": "ambiguous-1",
+  "approved_by": null,
+  "requirements": [
+    {
+      "id": "REQ-AMBIGUOUS-001",
+      "source": "specs/refund-prd.md# refundable-amount",
+      "risk": "money",
+      "rule": "Large refunds may require approval.",
+      "oracle_source": "model_inference",
+      "unresolved": ["Large is undefined", "Approval rule is missing"],
+      "acceptance": []
+    }
+  ]
+}

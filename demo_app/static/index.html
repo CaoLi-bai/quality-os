@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QualityOS 退款演示</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">QUALITYOS · CONTROLLED DEMO</p>
+    <h1>订单退款质量实验台</h1>
+    <p class="intro">真实 SQLite 状态、金额与权限校验。所有数据均为合成测试数据。</p>
+    <section>
+      <h2>退款申请</h2>
+      <label>测试用户<input id="user-id" value="user-1" autocomplete="off"></label>
+      <label>订单<select id="order-id" data-testid="order-select"></select></label>
+      <p id="order-summary" data-testid="order-summary">正在读取订单…</p>
+      <label>退款金额（分）<input id="amount" type="number" min="1" value="100" data-testid="refund-amount"></label>
+      <label>幂等键<input id="idempotency-key" value="ui-refund-001" data-testid="idempotency-key"></label>
+      <button id="refund-button" data-testid="__REFUND_TESTID__">提交退款</button>
+      <div id="result" role="status" data-testid="refund-result">尚未提交</div>
+    </section>
+    <section>
+      <h2>质量验证提示</h2>
+      <ul><li>累计退款不能超过实付金额</li><li>相同幂等键不得重复退款</li><li>用户只能操作自己的订单</li></ul>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

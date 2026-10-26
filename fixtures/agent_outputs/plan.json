@@ -1,0 +1,5 @@
+{
+  "strategy": "Risk-first API verification with state checks and independent oracle sources.",
+  "case_file": "specs/cases.json",
+  "human_review_required": ["money", "authorization"]
+}

@@ -1,0 +1,6 @@
+{
+  "verdict": "pass",
+  "unsupported_assertions": [],
+  "missing_risks": [],
+  "comments": ["Candidate cases link to approved requirements and verify both responses and persisted state."]
+}

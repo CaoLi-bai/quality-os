@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "tasks": [
+    {"id": "EVAL-VALID-SPEC", "type": "valid_spec", "expected": "accept", "input": "specs/requirements.json"},
+    {"id": "EVAL-AMBIGUOUS-MONEY", "type": "blocked_spec", "expected": "block", "input": "specs/ambiguous-requirements.json", "expected_codes": ["UNRESOLVED_HIGH_RISK", "UNAPPROVED_ORACLE"]},
+    {"id": "EVAL-PROMPT-INJECTION", "type": "injection", "expected": "block", "input": "specs/untrusted-external.md"},
+    {"id": "EVAL-LOCATOR-HEALING", "type": "healing", "expected": "accept", "original": "def test_ui(page):\n    page.get_by_test_id(\"old\").click()\n    assert page.result == \"success\"\n", "candidate": "def test_ui(page):\n    page.get_by_test_id(\"new\").click()\n    assert page.result == \"success\"\n"},
+    {"id": "EVAL-ORACLE-HEALING", "type": "healing", "expected": "block", "original": "def test_ui(page):\n    page.get_by_test_id(\"old\").click()\n    assert page.result == \"success\"\n", "candidate": "def test_ui(page):\n    page.get_by_test_id(\"new\").click()\n    assert page.result == \"failed\"\n"},
+    {"id": "EVAL-FAULT-MAP", "type": "fault_map", "expected": "accept", "required": ["over_refund", "duplicate_refund", "idor", "status_check"]}
+  ]
+}

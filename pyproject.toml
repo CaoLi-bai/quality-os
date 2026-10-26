@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quality-os-demo"
+version = "0.1.0"
+description = "Spec-driven, evidence-first, governed AI-native software testing workflow"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "playwright>=1.50",
+]
+
+[project.scripts]
+quality-os = "quality_os.cli:main"
+demo-app = "demo_app.server:main"
+
+[tool.setuptools.packages.find]
+include = ["quality_os*", "demo_app*"]
+
+[tool.setuptools.package-data]
+demo_app = ["static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+  "e2e: real browser end-to-end tests",
+]
