@@ -68,7 +68,7 @@ class Orchestrator:
             if issues:
                 raise GateFailure(json.dumps(issues, ensure_ascii=False))
             if not context["security_findings"]:
-                raise GateFailure("Prompt-injection fixture was not detected")
+                raise GateFailure("未检测到演示用的提示词注入样本，安全上下文校验未通过。")
             self.stage("validate-spec", "passed", "context-security.json")
 
             if self.completed("plan"):
@@ -78,8 +78,10 @@ class Orchestrator:
                 planning_context = compile_context(self.root, ["specs/requirements.json", "specs/cases.json"], trusted=True)
                 plan = self.generate("plan", planning_context, {
                     "type": "object", "required": ["strategy", "case_file", "human_review_required"],
-                    "properties": {"strategy": {"type": "string"}, "case_file": {"type": "string"}, "human_review_required": {"type": "array"}},
+                    "properties": {"strategy": {"type": "string"}, "case_file": {"type": "string", "const": "specs/cases.json"}, "human_review_required": {"type": "array", "items": {"type": "string"}}},
                 })
+            if plan.get("case_file") != "specs/cases.json":
+                raise GateFailure("模型计划返回了未授权的用例文件路径；本演示只允许 specs/cases.json。")
             cases = load_json(self.root / plan["case_file"])
             case_issues = validate_cases(cases, spec)
             if case_issues:
@@ -96,13 +98,13 @@ class Orchestrator:
             else:
                 self.stage("generate", "running")
                 generation = self.generate("generate", {
-                    "spec": spec, "cases": cases, "constraints": ["Python pytest", "stdlib HTTP client", "verify persisted state"],
+                    "spec": spec, "cases": cases, "constraints": ["Python pytest", "标准库 HTTP 客户端", "验证响应和持久化状态"],
                 }, {
                     "type": "object", "required": ["files"],
-                    "properties": {"files": {"type": "array", "items": {"type": "object", "required": ["target", "content"]}}},
+                    "properties": {"files": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["target", "content"], "properties": {"target": {"type": "string"}, "content": {"type": "string"}}}}},
                 })
                 generated_files = []
-                for item in generation["files"]:
+                for item in generation.get("files", []):
                     target = candidate_dir / Path(item["target"]).name
                     target.parent.mkdir(parents=True, exist_ok=True)
                     if "content" in item:
@@ -111,7 +113,7 @@ class Orchestrator:
                         shutil.copyfile(self.root / item["source"], target)
                     generated_files.append(target)
             if not generated_files:
-                raise GateFailure("No candidate tests generated")
+                raise GateFailure("模型没有生成任何候选测试文件。")
             self.stage("generate", "passed", "candidates/")
 
             if self.completed("independent-review"):
@@ -120,18 +122,18 @@ class Orchestrator:
                 self.stage("independent-review", "running")
                 review = self.generate("review", {
                     "spec": spec, "cases": cases,
-                    "candidate_paths": [str(path) for path in generated_files],
+                    "candidates": [{"path": path.name, "content": path.read_text(encoding="utf-8")} for path in generated_files],
                 }, {
                     "type": "object", "required": ["verdict", "unsupported_assertions", "missing_risks"],
-                    "properties": {"verdict": {"type": "string"}, "unsupported_assertions": {"type": "array"}, "missing_risks": {"type": "array"}},
+                    "properties": {"verdict": {"type": "string", "enum": ["pass", "reject"]}, "unsupported_assertions": {"type": "array", "items": {"type": "string"}}, "missing_risks": {"type": "array", "items": {"type": "string"}}},
                 })
             for path in generated_files:
                 tree = ast.parse(path.read_text(encoding="utf-8"))
                 tests = [node for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_")]
                 if not tests or any(not any(isinstance(child, ast.Assert) for child in ast.walk(test)) for test in tests):
-                    raise GateFailure(f"Candidate has a test without assertions: {path}")
+                    raise GateFailure(f"候选文件中存在无有效断言的测试：{path}")
             if review["verdict"] != "pass" or review["unsupported_assertions"] or review["missing_risks"]:
-                raise GateFailure(f"Independent review rejected candidate: {review}")
+                raise GateFailure(f"独立审查拒绝了候选测试：{json.dumps(review, ensure_ascii=False)}")
             self.stage("independent-review", "passed", "agent/review/output.json")
 
             if not self.completed("execute-good-build"):
@@ -140,7 +142,7 @@ class Orchestrator:
                 hub.record_run(baseline.run_id, baseline.to_dict(), [case["test_nodeid"] for case in cases["cases"]])
                 triage_run(self.run_dir / "execution")
                 if baseline.exit_code != 0:
-                    raise GateFailure("Candidate failed on good build")
+                    raise GateFailure("候选测试在正确版本上未通过。请查看 execution/pytest.stdout.log 和 execution/triage.json。")
             self.stage("execute-good-build", "passed", "execution/run.json")
 
             if self.completed("fault-proof"):
@@ -149,7 +151,7 @@ class Orchestrator:
                 self.stage("fault-proof", "running")
                 proof = prove_test_value(self.root, generated_files[0], self.run_dir / "proof")
             if proof["status"] != "passed":
-                raise GateFailure("Candidate did not catch every mapped fault")
+                raise GateFailure("候选测试未能抓到全部已映射故障，不能进入人工批准。")
             self.stage("fault-proof", "passed", "proof/proof.json")
             features = load_json(feature_path)
             for feature in features:

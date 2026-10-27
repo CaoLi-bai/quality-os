@@ -1,6 +1,20 @@
 # 架构与实现映射
 
-## 三条闭环
+## 当前主链路：真实测试 Agent
+
+`agent_workflow.py` 是通用 Web 项目主入口，不依赖内置退款规格或预制测试答案。
+
+- **工具层**：Kimi Code CLI + 官方 Playwright CLI + 工作区 Skill。选择 CLI 是因为当前 Kimi 0.43 会在未信任工作区禁用项目级 MCP；CLI 同样提供页面快照、操作、网络、Console、截图和 Trace，且更适合编码 Agent。
+- **规划层**：Planner 必须留下真实页面和操作记录；独立 Challenger 使用另一模型会话反驳计划，输出风险挑战与 `coverage.json`。
+- **交付层**：Generator 在隔离工作区生成 TypeScript Playwright 候选，自行执行并记录首次结果。
+- **验证层**：QualityOS 不采信 Agent 自述，独立运行 `npx playwright test`，解析 JUnit；首次失败进入 Healer，最终再次独立执行。
+- **故障证明**：`--fault-url` 将同一候选指向显式故障环境，只有真实测试失败才算抓到；未配置时标记 `not_configured`。
+- **项目记忆**：`project_memory.py` 保存项目画像、计划、风险矩阵、候选和运行历史；`regress` 直接独立执行，不重复消耗生成 token。
+- **治理边界**：无测试、无断言、Skip、无 JUnit、计划被 Healer 修改、故障逃逸均不得通过。候选最终仍是 `pending_human_approval`。
+
+`auto` 输出位于 `artifacts/agent-runs/<run-id>/`，长期项目记忆位于 `artifacts/projects/<project-key>/`。原始 Agent 日志和独立执行证据分开保存，避免把模型总结当成测试执行。
+
+## Legacy：内置退款演示的三条闭环
 
 ### 测试交付闭环
 
@@ -24,11 +38,13 @@
 
 统一返回：provider、阶段、结构化输出、原始输出、耗时、是否真实 AI、命令和模型标识。
 
-- `FixtureProvider`：读取可重复产物，`is_ai=false`。
-- `CLIProvider("kimi")`：调用 `kimi --plan -p`，解析 JSON。
+- `FixtureProvider`：读取可重复产物，`is_ai=false`，只有显式选择 `--provider fixture` 才使用。
+- `CLIProvider("kimi")`：结构化任务提供方，调用当前 CLI 兼容的 `kimi -p`，按规划、生成、审查、项目接入和失败仲裁提供中文契约并解析 JSON；不与 `-p` 混用 `--plan`/`--auto`。
 - `CLIProvider("claude")`：调用非交互 Claude，使用 JSON Schema、plan 权限和空工具集。
 
-模型输出不是门禁。即使模型返回 `pass`，确定性规格检查、AST 检查和真实执行仍必须独立通过。
+规划、测试生成、独立审查和 `onboard` 项目接入需要语义判断，使用真实 LLM；规格门禁、注入扫描、AST 检查、执行与统计使用确定性代码，不为了“用 AI”而替代确定性验证。审查上下文包含候选源码，而不是只给模型一个不可读的路径。模型输出不是门禁，即使模型返回 `pass`，确定性规格检查、AST 检查和真实执行仍必须独立通过。
+
+`onboard` 可以读取任意项目的 PRD/接口文档，生成未批准候选规格和用例；它强制清空 `approved_by`，保留高风险未决项并标记测试未执行。完整 `run` 的应用启动和故障注入仍绑定内置退款演示，不声称支持任意项目一键闭环。
 
 ## 长任务状态
 

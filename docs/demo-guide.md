@@ -1,8 +1,33 @@
-# 五分钟演示脚本
+# 演示脚本
 
 以下命令使用 Windows Git Bash 路径。
 
-## 1. 规格不是形式，而是门禁
+## 主入口：真实 AI 自动化测试
+
+先启动退款测试应用：
+
+```bash
+.venv/Scripts/python -m demo_app.server --port 8765
+```
+
+另开终端执行：
+
+```bash
+.venv/Scripts/python -m quality_os.cli auto \
+  --url http://127.0.0.1:8765 \
+  --document specs/refund-prd.md \
+  --project-key refund --run-id agent-demo
+```
+
+这不是 fixture：Kimi 必须用 Playwright CLI 实际探索，独立 Challenger 补风险，Generator 写并执行测试，QualityOS 最后独立重跑。打开 `artifacts/agent-runs/agent-demo/report.html`，再检查 `workspace/evidence/` 和 `execution/`。
+
+项目记忆回归：
+
+```bash
+.venv/Scripts/python -m quality_os.cli regress --project-key refund --run-id agent-regression
+```
+
+## Legacy 1. 规格不是形式，而是门禁
 
 ```bash
 .venv/Scripts/python -m quality_os.cli validate-spec --spec specs/requirements.json
@@ -15,8 +40,16 @@
 
 ## 2. 完整交付与故障证明
 
+默认使用真实 Kimi（消耗 token）：
+
 ```bash
-.venv/Scripts/python -m quality_os.cli run --run-id demo
+.venv/Scripts/python -m quality_os.cli run --run-id kimi-demo
+```
+
+只做可重复离线演示时：
+
+```bash
+.venv/Scripts/python -m quality_os.cli run --provider fixture --run-id demo
 ```
 
 打开 `artifacts/runs/demo/report.html`，再查看：

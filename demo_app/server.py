@@ -88,7 +88,7 @@ def create_server(host: str = "127.0.0.1", port: int = 0, db_path: str = "artifa
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="QualityOS refund demo application")
+    parser = argparse.ArgumentParser(description="QualityOS 订单退款演示应用")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--db", default="artifacts/demo.db")
@@ -97,7 +97,7 @@ def main() -> None:
     args = parser.parse_args()
     faults = {item for item in args.faults.split(",") if item}
     server = create_server(args.host, args.port, args.db, faults, args.ui_version)
-    print(f"QualityOS demo listening on http://{args.host}:{server.server_port}", flush=True)
+    print(f"QualityOS 退款演示已启动：http://{args.host}:{server.server_port}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

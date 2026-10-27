@@ -2,5 +2,5 @@
   "verdict": "pass",
   "unsupported_assertions": [],
   "missing_risks": [],
-  "comments": ["Candidate cases link to approved requirements and verify both responses and persisted state."]
+  "comments": ["候选用例均关联已批准需求，并同时验证响应和持久化状态。"]
 }

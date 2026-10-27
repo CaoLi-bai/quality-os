@@ -29,21 +29,21 @@ def inspect_candidate(original: str, candidate: str) -> dict:
     try:
         changed = normalized_ast(original) != normalized_ast(candidate)
     except SyntaxError as error:
-        return {"passed": False, "reason": f"Invalid Python: {error}"}
+        return {"passed": False, "reason": f"候选文件不是有效 Python：{error}"}
     if changed:
         return {
             "passed": False,
-            "reason": "Change exceeds locator-only scope; assertions, expected data, control flow and skips are immutable.",
+            "reason": "变更超出定位器范围；断言、预期数据、控制流和 Skip 状态均不可修改。",
         }
     if original == candidate:
-        return {"passed": False, "reason": "Candidate contains no change."}
-    return {"passed": True, "reason": "Only supported locator arguments changed."}
+        return {"passed": False, "reason": "候选文件没有任何变更。"}
+    return {"passed": True, "reason": "仅受支持的定位器参数发生变化。"}
 
 
 def propose_healing(source_path: Path, output_dir: Path, old: str, new: str, mode: str = "observe") -> dict:
     original = source_path.read_text(encoding="utf-8")
     if old not in original:
-        raise ValueError(f"Locator not found: {old}")
+        raise ValueError(f"源文件中找不到旧定位器：{old}")
     candidate = original.replace(old, new)
     check = inspect_candidate(original, candidate)
     diff = "\n".join(difflib.unified_diff(

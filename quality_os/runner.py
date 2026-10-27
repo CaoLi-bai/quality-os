@@ -43,14 +43,14 @@ def wait_for_health(base_url: str, process: subprocess.Popen, timeout: float = 1
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         if process.poll() is not None:
-            raise RuntimeError(f"Demo application exited with {process.returncode}")
+            raise RuntimeError(f"演示应用提前退出，退出码：{process.returncode}。请查看 application.log。")
         try:
             with urllib.request.urlopen(base_url + "/api/health", timeout=1) as response:
                 if response.status == 200:
                     return
         except OSError:
             time.sleep(0.1)
-    raise TimeoutError("Demo application did not become healthy")
+    raise TimeoutError("演示应用在 15 秒内未通过健康检查。请检查端口、启动日志和依赖。")
 
 
 def junit_summary(path: Path) -> dict[str, int]:
@@ -102,7 +102,7 @@ def run_pytest(root: Path, test_path: Path, evidence_dir: Path, run_id: str, fau
                 process.kill()
                 process.wait(timeout=5)
     if not junit_path.exists():
-        raise RuntimeError(f"Pytest produced no JUnit report; see {evidence_dir / 'pytest.stdout.log'}")
+        raise RuntimeError(f"pytest 未生成 JUnit 报告，请查看：{evidence_dir / 'pytest.stdout.log'}")
     summary = junit_summary(junit_path)
     result = RunResult(
         run_id=run_id,

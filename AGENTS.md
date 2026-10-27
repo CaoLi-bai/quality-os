@@ -2,14 +2,14 @@
 
 ## 项目定位
 
-这是一个规格驱动、证据闭环、受控自治的 AI Native 测试工作流演示。所有业务数据均为合成数据，不连接真实资金、客户或生产系统。
+这是一个真实 Agent 驱动、证据闭环、受控自治的 AI 自动化测试工作流。`auto` 使用 Kimi + Playwright CLI 操作隔离测试项目；`run` 和内置退款应用仅为 legacy 演示。所有内置业务数据均为合成数据，不连接真实资金、客户或生产系统。
 
 ## 不可变规则
 
-- `specs/requirements.json` 是演示业务预期的唯一事实源，不得从产品当前行为反推预期。
+- `auto` 的业务预期只能来自用户提供的真实需求文档；legacy 演示以 `specs/requirements.json` 为唯一事实源。不得从产品当前行为反推预期。
 - 金额、权限、安全和合规需求存在未决项时，必须阻断。
-- fixture provider 不是 LLM；报告必须保留 `is_ai=false`。
-- Healer 只能修改受支持的定位器参数，不能修改断言、预期数据、Skip、测试数量或产品代码。
+- fixture provider 不是 LLM；报告必须保留 `is_ai=false`。`auto` 没有 fixture 模式，Agent 自述成功不能替代独立 Playwright/JUnit 验证。
+- Healer 只能修改有证据支持的测试实现，不能修改断言业务预期、预期数据、Skip、测试数量或产品代码。legacy Python Healer 仍只允许受支持的定位器参数。
 - 候选测试只能进入独立候选目录，命名审核人批准前不得合并到 `tests/approved/`。
 - 不得编造模型调用、人工审批、业务收益、提效比例或历史项目时间。
 
@@ -19,6 +19,9 @@
 .venv/Scripts/python -m pytest
 .venv/Scripts/python -m quality_os.cli eval --trials 3
 .venv/Scripts/python -m quality_os.cli run --provider fixture --run-id demo
+.venv/Scripts/python -m quality_os.cli auto --url http://127.0.0.1:8765 --document specs/refund-prd.md --project-key refund --run-id agent-demo
+.venv/Scripts/python -m quality_os.cli regress --project-key refund --run-id agent-regression
+.venv/Scripts/python -m quality_os.cli verify --run-dir artifacts/agent-runs/agent-demo
 .venv/Scripts/python -m quality_os.cli browser --run-dir artifacts/browser
 ```
 

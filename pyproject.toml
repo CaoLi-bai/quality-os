@@ -4,10 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quality-os-demo"
-version = "0.1.0"
-description = "Spec-driven, evidence-first, governed AI-native software testing workflow"
+version = "0.2.0"
+description = "Evidence-first AI agent testing with real browser exploration, independent challenge and regression memory"
+readme = "README.md"
 requires-python = ">=3.12"
+authors = [{name = "Cao Li"}]
+keywords = ["ai-testing", "agent", "playwright", "quality-assurance", "evaluation"]
 dependencies = []
+
+[project.urls]
+Repository = "https://github.com/CaoLi-bai/quality-os"
+Issues = "https://github.com/CaoLi-bai/quality-os/issues"
+Changelog = "https://github.com/CaoLi-bai/quality-os/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [

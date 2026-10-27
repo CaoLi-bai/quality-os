@@ -31,7 +31,7 @@ def prove_test_value(root: Path, test_path: Path, output_dir: Path) -> dict:
         "status": "passed" if baseline.exit_code == 0 and all(item["caught"] for item in proofs) else "failed",
         "good_build": {"passed": baseline.exit_code == 0, "run_id": baseline.run_id},
         "faults": proofs,
-        "rule": "Candidate must pass on the good build and catch every mapped injected fault.",
+        "rule": "候选测试必须在正确版本通过，并且让每一个已映射的注入故障暴露为测试失败。",
     }
     dump_json(output_dir / "proof.json", report)
     return report

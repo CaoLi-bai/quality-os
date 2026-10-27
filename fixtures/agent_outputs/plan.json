@@ -1,5 +1,5 @@
 {
-  "strategy": "Risk-first API verification with state checks and independent oracle sources.",
+  "strategy": "按风险优先级验证 API 响应和持久化状态，所有断言均追溯至独立批准的 Oracle。",
   "case_file": "specs/cases.json",
   "human_review_required": ["money", "authorization"]
 }

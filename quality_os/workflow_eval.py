@@ -28,7 +28,7 @@ def evaluate_task(root: Path, task: dict) -> dict:
     elif task["type"] == "fault_map":
         accepted = set(task["required"]).issubset(FAULT_TESTS)
     else:
-        raise ValueError(f"Unknown eval type: {task['type']}")
+        raise ValueError(f"未知评测任务类型：{task['type']}")
     actual = "accept" if accepted else "block"
     return {"passed": actual == expected, "expected": expected, "actual": actual, "details": details}
 
@@ -61,20 +61,20 @@ def run_workflow_evals(root: Path, output_dir: Path, trials: int = 3) -> dict:
         "task_count": len(results),
         "false_green_count": false_greens,
         "illegal_skip_changes": 0,
-        "model_grader": {"status": "not_run", "reason": "No live LLM judge configured in offline evaluation"},
-        "human_review": "required for subjective rubric calibration",
+        "model_grader": {"status": "not_run", "reason": "本套件验证确定性门禁，不需要也不配置在线 LLM 评分器。"},
+        "human_review": "主观评分标准仍需人工校准。",
         "duration_seconds": round(time.monotonic() - started, 3),
         "results": results,
     }
     dump_json(output_dir / "workflow-evals.json", report)
     lines = [
-        "# Workflow Evals", "",
-        f"- 通过：`{report['passed']}`",
+        "# 工作流黄金评测", "",
+        f"- 全部通过：`{str(report['passed']).lower()}`",
         f"- 任务数：{len(results)}；每任务重复：{trials}",
         f"- 假绿信号：{false_greens}",
-        f"- 代码评分器耗时：{report['duration_seconds']} 秒",
-        "- 模型评分器：未运行；主观 Rubric 仍需人工校准。", "",
-        "| 任务 | pass@k | pass^k |", "|---|---|---|",
+        f"- 确定性代码评分器耗时：{report['duration_seconds']} 秒",
+        "- 本套件不调用模型：规格门禁、注入识别和 AST 检查必须由确定性代码验证；主观评分仍需人工校准。", "",
+        "| 任务 | 至少一次通过（pass@k） | 每次都通过（pass^k） |", "|---|---|---|",
     ]
     for item in results:
         lines.append(f"| {item['id']} | {item['pass_at_k']} | {item['pass_caret_k']} |")

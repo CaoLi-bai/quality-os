@@ -25,9 +25,26 @@ def test_claude_adapter_uses_bounded_noninteractive_command(monkeypatch):
         assert "-p" in command
         assert "--json-schema" in command
         assert "--permission-mode" in command
+        prompt = command[command.index("-p") + 1]
+        assert "独立测试资产审查员" in prompt
+        assert "只返回一个" in prompt
         return SimpleNamespace(returncode=0, stdout='{"verdict":"pass"}', stderr="")
     monkeypatch.setattr("quality_os.providers.cli.subprocess.run", fake_run)
     result = CLIProvider("claude").generate("review", {"documents": []}, {"type": "object"})
     assert result.is_ai is True
     assert result.output["verdict"] == "pass"
     assert all("sk" not in " ".join(result.command).lower() for _ in [0])
+
+
+def test_kimi_adapter_is_compatible_with_current_noninteractive_cli(monkeypatch):
+    def fake_run(command, **kwargs):
+        assert "--plan" not in command
+        assert "--auto" not in command
+        prompt = command[command.index("-p") + 1]
+        assert "独立" in prompt
+        return SimpleNamespace(returncode=0, stdout='{"cases":[],"summary":{}}', stderr="")
+
+    monkeypatch.setattr("quality_os.providers.cli.subprocess.run", fake_run)
+    result = CLIProvider("kimi").generate("adjudicate", {"cases": []}, {"type": "object"})
+    assert result.is_ai is True
+    assert result.command == ["kimi", "-p", "<bounded-prompt>"]

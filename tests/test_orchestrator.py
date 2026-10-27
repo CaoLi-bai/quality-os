@@ -2,12 +2,23 @@ import json
 from pathlib import Path
 
 from quality_os.orchestrator import Orchestrator
+from quality_os.providers.fixture import FixtureProvider
 
 ROOT = Path(__file__).parents[1]
 
 
-def test_complete_offline_workflow_has_real_proof_and_pending_human_gate(tmp_path):
+def test_complete_offline_workflow_has_real_proof_and_pending_human_gate(tmp_path, monkeypatch):
+    observed = {}
+
+    class RecordingProvider(FixtureProvider):
+        def generate(self, stage, context, schema):
+            if stage == "review":
+                observed.update(context)
+            return super().generate(stage, context, schema)
+
+    monkeypatch.setattr("quality_os.orchestrator.create_provider", lambda name, root: RecordingProvider(root))
     result = Orchestrator(ROOT, tmp_path / "run", "fixture").run()
+    assert "def test_over_refund_is_rejected_without_state_change" in observed["candidates"][0]["content"]
     summary = result["report"]["summary"]
     assert summary["provider"] == "fixture"
     assert summary["ai_generation_used"] is False
