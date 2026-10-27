@@ -1,6 +1,6 @@
 # QualityOS
 
-**当前版本：v0.2.0（真实项目实战预览）** · [项目展示页](docs/index.html) · [变更日志](CHANGELOG.md) · [验收记录](docs/verification.md) · [发布元数据](docs/release-metadata.md)
+**当前版本：v0.2.1（真实项目实战预览）** · [项目展示页](docs/index.html) · [变更日志](CHANGELOG.md) · [验收记录](docs/verification.md) · [发布元数据](docs/release-metadata.md)
 
 **会实际操作应用的 AI 自动化测试工作流，不是 fixture 生成器。**
 

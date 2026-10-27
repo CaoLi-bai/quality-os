@@ -182,14 +182,17 @@ export default defineConfig({{
         event["command"] = evidence_command
         output = (stage_dir / "stdout.log").read_text(encoding="utf-8")
         session_id = None
-        listing = subprocess.run(
-            [shutil.which(executable) or executable, "session", "list", "--cwd", str(self.workspace), "--limit", "1", "--json"],
-            capture_output=True, text=True, timeout=30, check=False,
-        )
-        if listing.returncode == 0:
-            sessions = json.loads(listing.stdout)
-            if sessions:
-                session_id = sessions[0]["id"]
+        try:
+            listing = subprocess.run(
+                [shutil.which(executable) or executable, "session", "list", "--cwd", str(self.workspace), "--limit", "1", "--json"],
+                capture_output=True, text=True, timeout=30, check=False,
+            )
+            if listing.returncode == 0:
+                sessions = json.loads(listing.stdout)
+                if sessions:
+                    session_id = sessions[0]["id"]
+        except (FileNotFoundError, subprocess.TimeoutExpired, json.JSONDecodeError):
+            pass
         match = re.search(r"To resume this session:\s*kimi\s+-r\s+([^\s]+)", output)
         session_id = session_id or (match.group(1) if match else None)
         if not session_id:

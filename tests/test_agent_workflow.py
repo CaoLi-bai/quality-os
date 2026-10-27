@@ -66,6 +66,9 @@ def test_kimi_session_is_created_then_reused(tmp_path, monkeypatch):
     assert "--session" not in commands[0]
     assert commands[1][1:3] == ["--session", "session_real"]
     assert workflow.session_id == "session_real"
+    monkeypatch.setattr("quality_os.agent_workflow.subprocess.run", lambda *args, **kwargs: (_ for _ in ()).throw(FileNotFoundError("kimi 不存在")))
+    workflow.run_agent("review", "无 Kimi CLI 时使用文本会话证据")
+    assert workflow.session_id == "session_real"
 
 
 def test_fault_environment_must_fail_with_real_test_evidence(tmp_path, monkeypatch):

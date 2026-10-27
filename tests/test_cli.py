@@ -9,7 +9,7 @@ def test_version_matches_release(capsys, monkeypatch):
         main()
     except SystemExit as error:
         assert error.code == 0
-    assert capsys.readouterr().out.strip() == "quality-os 0.2.0"
+    assert capsys.readouterr().out.strip() == "quality-os 0.2.1"
 
 
 def test_run_defaults_to_real_kimi():
